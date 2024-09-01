@@ -6,7 +6,7 @@ export default createStore({
     user: null,
     users: [],
     token: null,
-    isLoggedIn: false
+    isLoggedIn: false,
   },
   mutations: {
     setToken(state, token) {

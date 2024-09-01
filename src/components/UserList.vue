@@ -26,7 +26,7 @@ export default {
     });
 
     const startDM = (user) => {
-      router.push(`/dm/${user.username}`);
+      router.push(`/dm/${user.id}`);
     };
 
     return { users, startDM };

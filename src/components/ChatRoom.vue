@@ -35,19 +35,19 @@
 }
 
 .messages {
-  flex: 1; /* Available space */
-  overflow-y: auto; /* Enable vertical scrolling */
+  flex: 1;
+  overflow-y: auto;
   border: 1px solid #ccc;
   padding: 1rem;
   margin-bottom: 1rem;
-  max-height: 80vh; /* Maximum height of the messages container */
+  max-height: 80vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* Ensure messages are aligned to the bottom */
+  justify-content: flex-end;
 }
 
 .message-item {
-  margin-bottom: 0.5rem; /* Space between messages */
+  margin-bottom: 0.5rem;
 }
 
 form {
@@ -65,7 +65,7 @@ button {
 </style>
 
 <script>
-import {ref, onMounted, onUnmounted, watch} from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useStore } from 'vuex';
 import socket from '../services/socket';
 
@@ -78,50 +78,45 @@ export default {
     const messagesContainer = ref(null);
 
     onMounted(() => {
+      // 소켓 연결
+      socket.connectSocket(store.state.token);
+      const socketInstance = socket.getSocket();
 
       // 이전 채팅 내용 불러오기
-      store.dispatch('fetchMessages', { roomId: '1' }).then((res) => {
-        console.log("이전 채팅 내용", res)
+      store.dispatch('fetchMessages', '1').then((res) => {
+        console.log("이전 채팅 내용 불러오기", res);
         messages.value = res;
       });
 
+      // 방 입장 시 서버에 알림
+      socketInstance.emit('enter', {roomId: '1'});
 
-      if(socket.connected) {
-        // 방 입장 시 서버에 알림
-        console.log("방 입장")
-        socket.emit('enter', { roomId: '1' });
-      }
-
-      socket.on('userEntered', (message) => {
-        console.log("유저 입장", message)
-        // console.log("메시지", messages)
+      // 입장 이벤트 수신
+      socketInstance.on('userEntered', (message) => {
         messages.value.push(message);
       });
-
-      // 소켓 연결 시 메시지 수신 준비 message 이벤트 수신
-      socket.on('message', (message) => {
-        console.log("메시지 수신", message)
+      // 메시지 수신
+      socketInstance.on('message', (message) => {
         messages.value.push(message);
       });
-
-      socket.on('userLeft', (message) => {
-        console.log("유저 퇴장", message)
+      // 퇴장 이벤트 수신
+      socketInstance.on('userLeft', (message) => {
         messages.value.push(message);
-      })
-
-      socket.on('roomUsers', (users) => {
-        console.log("방 유저", users)
+      });
+      // 방에 있는 유저 목록 수신
+      socketInstance.on('roomUsers', (users) => {
         roomUsers.value = users;
-      })
-
+      });
     });
 
     onUnmounted(() => {
-      socket.off('message');
-      socket.off('userEntered');
-      socket.off('userLeft');
-      socket.off('roomUsers');
-    })
+      const socketInstance = socket.getSocket();
+      socketInstance.off('message');
+      socketInstance.off('userEntered');
+      socketInstance.off('userLeft');
+      socketInstance.off('roomUsers');
+      socket.disconnectSocket(); // 소켓 연결 해제
+    });
 
     // 자동 스크롤을 위한 watcher
     watch(messages, () => {
@@ -131,11 +126,9 @@ export default {
     });
 
     const sendMessage = () => {
-      console.log("메시지 전송")
-      console.log(newMessage.value)
+      const socketInstance = socket.getSocket();
       if (newMessage.value.trim()) {
-        console.log("트림 완료")
-        socket.emit('message', {
+        socketInstance.emit('message', {
           content: newMessage.value,
           roomId: '1'
         });
@@ -143,7 +136,7 @@ export default {
       }
     };
 
-    return { messages, newMessage, sendMessage, roomUsers };
+    return {messages, newMessage, sendMessage, roomUsers};
   }
 }
 </script>
