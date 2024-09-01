@@ -1,5 +1,8 @@
-# Vue 3 + Vite
+## vue3 
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+1. npm install 로 node_modules 설치
+2. npm run dev 실행
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## 프론트쪽 오작동이 있습니다. 해결하지 못하였습니다.
+1. socket.js 설정 오류인지 모르나 이전 로그인된 토큰이 백엔드로 전송되는 문제.
+
